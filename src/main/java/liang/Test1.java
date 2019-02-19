@@ -1,8 +1,8 @@
 package liang;
 
-import com.linkedin.featurefu.expr.Expr;
-import com.linkedin.featurefu.expr.Expression;
-import com.linkedin.featurefu.expr.VariableRegistry;
+import com.lianjia.aisearch.featurefu.expr.Expr;
+import com.lianjia.aisearch.featurefu.expr.Expression;
+import com.lianjia.aisearch.featurefu.expr.VariableRegistry;
 import liang.bean.Features;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
