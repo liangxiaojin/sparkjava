@@ -1,5 +1,5 @@
 features:
-  - sources: hdfs
+  - source: hdfs
     formula: (sigmoid (+ (* a x) b))
     variables:
       x: 0
