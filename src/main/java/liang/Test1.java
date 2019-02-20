@@ -36,7 +36,6 @@ public class Test1 implements Serializable {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        List<Double> results = new ArrayList<Double>();
         for (Object o : features.getFeatures()) {
             final Map<String, Object> feature = (Map) o;
             //sparkContext.setLogLevel("INFO");
@@ -45,13 +44,13 @@ public class Test1 implements Serializable {
 
             JavaRDD<String> data = javaSparkContext.textFile(feature.get("path").toString());
 
-            JavaRDD<String> words =  data.flatMap(new FlatMapFunction<String, String>() {
+            JavaRDD<String> lines =  data.flatMap(new FlatMapFunction<String, String>() {
                 public Iterator<String> call(String s) throws Exception {
                     return Arrays.asList(s.split("\\r\\n")).iterator();
                 }
             });
 
-            JavaRDD<Double> ss =  words.map(new Function<String,Double>() {
+            JavaRDD<Double> results =  lines.map(new Function<String,Double>() {
                 public Double call(String s) throws Exception {
                     System.out.println(s);
                     String[] columns = s.split(",");
@@ -69,7 +68,7 @@ public class Test1 implements Serializable {
                 }
             });
 
-            System.out.println(ss.collect());
+            System.out.println(results.collect());
             //results:[0.9933071490757153, 0.999999999994891]
         }
     }
