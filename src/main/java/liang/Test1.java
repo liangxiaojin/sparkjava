@@ -28,7 +28,7 @@ public class Test1 implements Serializable {
         SPARK_CONF.set("spark.driver.maxResultSize", "6g");
         SPARK_CONF.setAppName("SugLog");
         sparkContext = new SparkContext(SPARK_CONF);
-        File dumpFile=new File(System.getProperty("user.dir") + "\\src\\main\\resources\\featureConfig.yaml");
+        File dumpFile = new File(System.getProperty("user.dir") + "\\src\\main\\resources\\featureConfig.yaml");
         Features features = null;
         try {
             features = Yaml.loadType(dumpFile, Features.class);
@@ -36,46 +36,41 @@ public class Test1 implements Serializable {
             e.printStackTrace();
         }
         List<Double> results = new ArrayList<Double>();
-        for (Object o : features.getFeatures()){
-            Map<String,Object> feature = (Map) o;
+        for (Object o : features.getFeatures()) {
+            final Map<String, Object> feature = (Map) o;
             //sparkContext.setLogLevel("INFO");
             JavaSparkContext javaSparkContext = new JavaSparkContext(sparkContext);
             // Create the DataFrame
+
+
             JavaRDD<String> data = javaSparkContext.textFile(feature.get("path").toString());
-            JavaRDD<List<String[]>> ss = data.map(new Function<String, List<String[]>>() {
-                public List<String[]> call(String s) throws Exception {
-                    List<String[]> values = new ArrayList<String[]>();
+            JavaRDD<List<Double>> ss = data.map(new Function<String, List<Double>>() {
+                public List<Double> call(String s) throws Exception {
+                    List<Double> results = new ArrayList<Double>();
                     String[] lines = s.split("\\r\\n");
                     for (String a : lines) {
                         String[] columns = a.split(",");
-                        values.add(columns);
+                        VariableRegistry variableRegistry = new VariableRegistry();
+                        //parse expression with variables, use variableRegistry to register variables
+                        Expr expression = Expression.parse(feature.get("formula").toString(), variableRegistry);
+                        //retrieve variables from variableRegistry by name
+                        Map<String, Integer> variables = (Map<String, Integer>) feature.get("variables");
+                        List<String> variableKeyList = new ArrayList<String>(variables.keySet());
+                        //set variable values
+                        Long start = System.currentTimeMillis();
+                        for (String variable : variableKeyList) {
+                            variableRegistry.findVariable(variable).setValue(Integer.valueOf(columns[variables.get(variable)]));
+                        }
+                        results.add(expression.evaluate());
+                        Long end = System.currentTimeMillis();
+                        System.out.println("cost:" + (end - start));
+
                     }
-                    return values;
+                    return results;
                 }
             });
             System.out.println(ss.collect());
-            List<List<String[]>> lines = ss.collect();
-            VariableRegistry variableRegistry = new VariableRegistry();
-            //parse expression with variables, use variableRegistry to register variables
-            Expr expression = Expression.parse(feature.get("formula").toString(), variableRegistry);
-            //retrieve variables from variableRegistry by name
-            Map<String,Integer> variables = (Map<String, Integer>) feature.get("variables");
-            List<String> variableKeyList = new ArrayList<String>(variables.keySet()) ;
-            //set variable values
-            for (List<String[]> line : lines) {
-                for (String[] line1 : line){
-                    Long start = System.currentTimeMillis();
-                    for (String variable : variableKeyList){
-                        variableRegistry.findVariable(variable).setValue(Integer.valueOf(line1[variables.get(variable)]));
-                    }
-                    results.add(expression.evaluate());
-                    Long end = System.currentTimeMillis();
-                    System.out.println("cost:"+ (end - start));
-                }
-
-            }
+            //results:[0.9933071490757153, 0.999999999994891]
         }
-        System.out.println(results);
-        //results:[0.9933071490757153, 0.999999999994891]
     }
 }
