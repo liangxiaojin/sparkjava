@@ -1,0 +1,42 @@
+feature:
+  formula: (sigmoid (+ (* a x) b))
+  calculate:
+    numberOfOperands: 1
+    symbol: sin
+    params:
+      - id: p1
+        numberOfOperands: 2
+        symbol: +
+        params:
+          - id: p1
+            numberOfOperands: 2
+            symbol: *
+            params:
+                - id: h1
+                  source: hdfs
+                  path: /xx/xxx/xxx.txt
+                  dataType: text
+                  columnSplitSymbol: \s
+                  variables:
+                     a:
+                       num: 1
+                       dataType: json_{}
+                       param: age
+                - id: h2
+                  source: hdfs
+                  path: /xx/xxx/xxx.txt
+                  dataType: json
+                  variables:
+                     a:
+                      num: 0
+                      dataType: json_{}
+                      param: height
+          - id: p2
+            source: hdfs
+            path: /xx/xxx/xxx.txt
+            dataType: json
+            variables:
+                a:
+                  num: 0
+                  dataType: json_{}
+                  param: weight
