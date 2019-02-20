@@ -1,0 +1,38 @@
+formula: (sigmoid (+ (* a x) b))
+variables:
+  a: h1.a
+  b: h2.a
+  x: h3.a
+datas:
+  - id: h1
+    source: hdfs
+    path: /xx/xxx/xxx.csv
+    dataType: text
+    columnSplitSymbol: \s
+    variables:
+      a:
+        num: 1
+        dataType: json_{}
+        param: age
+      b:
+        num: 0
+        dataType: Integer
+  - id: h2
+    source: hdfs
+    path: /xx/xxx/xxx.txt
+    dataType: json
+    variables:
+      a:
+        num: 0
+        dataType: json_{}
+        param: height
+  - id: h3
+    source: hdfs
+    path: /xx/xxx/xxx.txt
+    dataType: text
+    columnSplitSymbol: \s
+    variables:
+      a:
+        num: 1
+        dataType: json_{}
+        param: weight
