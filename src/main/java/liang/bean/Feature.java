@@ -1,20 +1,13 @@
 package liang.bean;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Feature {
-    private String source;
     private String formula;
-    private HashMap<String,Integer> variables;
-    private String path;
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
+    private String variables;
+    private List<Map<String,Object>> sources;
 
     public String getFormula() {
         return formula;
@@ -24,19 +17,19 @@ public class Feature {
         this.formula = formula;
     }
 
-    public HashMap<String, Integer> getVariables() {
+    public String getVariables() {
         return variables;
     }
 
-    public void setVariables(HashMap<String, Integer> variables) {
+    public void setVariables(String variables) {
         this.variables = variables;
     }
 
-    public String getPath() {
-        return path;
+    public List<Map<String, Object>> getSources() {
+        return sources;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setSources(List<Map<String, Object>> sources) {
+        this.sources = sources;
     }
 }

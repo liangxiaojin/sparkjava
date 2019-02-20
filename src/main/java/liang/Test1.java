@@ -50,10 +50,11 @@ public class Test1 implements Serializable {
                 }
             });
 
+
             JavaRDD<Double> results =  lines.map(new Function<String,Double>() {
                 public Double call(String s) throws Exception {
                     System.out.println(s);
-                    String[] columns = s.split(",");
+                    String[] columns = s.split("\\s");
                     VariableRegistry variableRegistry = new VariableRegistry();
                     //parse expression with variables, use variableRegistry to register variables
                     Expr expression = Expression.parse(feature.get("formula").toString(), variableRegistry);
