@@ -44,8 +44,11 @@ public class Test1 implements Serializable {
 
 
             JavaRDD<String> data = javaSparkContext.textFile(feature.get("path").toString());
+
             JavaRDD<List<Double>> ss = data.map(new Function<String, List<Double>>() {
+
                 public List<Double> call(String s) throws Exception {
+
                     List<Double> results = new ArrayList<Double>();
                     String[] lines = s.split("\\r\\n");
                     for (String a : lines) {
