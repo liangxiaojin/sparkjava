@@ -36,7 +36,7 @@ public class WordCount {
 
             public Iterator<String> call(String line) throws Exception {
 
-                return Arrays.asList(line.split(",")).iterator();
+                return Arrays.asList(line.split("\\r\\n")).iterator();
 
             }
         });
