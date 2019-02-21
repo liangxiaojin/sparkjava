@@ -1,17 +1,25 @@
 formula: (sigmoid (+ (* a x) b))
+variables:
+  0: x
+  1: a
+  2: b
 sources:
-  - id: 0
-    source: hdfs
+  - source: hdfs
     path: D:\code\people.txt
     dataType: text
     columnSplitSymbol: \s
     variables:
-      a:
-        num: 0
-        dataType: Integer
-      b:
-        num: 1
-        dataType: Integer
       x:
+        num: 0
+      b:
         num: 2
-        dataType: Integer
+  - source: hdfs
+    path: D:\code\animal.txt
+    dataType: text
+    columnSplitSymbol: \s
+    variables:
+      a:
+        num: 1
+out:
+  type: hdfs
+  path: D:\code\people.txt
