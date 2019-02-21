@@ -1,32 +1,14 @@
 formula: (sigmoid (+ (* a x) b))
-variables:
-     a: h1.a
-     b: h1.b
-     x: h2.x
-sources:
-  - id: h1
-    source: hdfs
-    path: D:\code\people.txt
-    dataType: text
-    columnSplitSymbol: \s
-    variables:
-      a:
-        num: 0
-        dataType: Double
-      b:
-        num: 1
-        dataType: json
-        param: house.bedroom.num
-        paramType: Double
-  - id: h2
-    source: hdfs
-    path: D:\code\animal.txt
-    dataType: text
-    columnSplitSymbol: \s
-    variables:
-      x:
-        num: 0
-        dataType: Integer
-out:
-  type: hdfs
-  path: D:\code\people.txt
+numberOfOperands: 1
+symbol: sin
+params:
+      - id: p1
+        numberOfOperands: 2
+        symbol: +
+        params:
+          - numberOfOperands: 2
+            symbol: *
+            params:
+                - 1
+                - 2
+          - 3
