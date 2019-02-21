@@ -6,8 +6,43 @@ import java.util.Map;
 
 public class Feature {
     private String formula;
-    private String variables;
+    private Map<Integer,String> variables;
     private List<Map<String,Object>> sources;
+    private Integer numberOfOperands;
+    private String symbol;
+    private List<Map<String,Object>> params;
+
+    public Map<Integer, String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(Map<Integer, String> variables) {
+        this.variables = variables;
+    }
+
+    public Integer getNumberOfOperands() {
+        return numberOfOperands;
+    }
+
+    public void setNumberOfOperands(Integer numberOfOperands) {
+        this.numberOfOperands = numberOfOperands;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
+    public List<Map<String, Object>> getParams() {
+        return params;
+    }
+
+    public void setParams(List<Map<String, Object>> params) {
+        this.params = params;
+    }
 
     public String getFormula() {
         return formula;
@@ -17,13 +52,6 @@ public class Feature {
         this.formula = formula;
     }
 
-    public String getVariables() {
-        return variables;
-    }
-
-    public void setVariables(String variables) {
-        this.variables = variables;
-    }
 
     public List<Map<String, Object>> getSources() {
         return sources;
