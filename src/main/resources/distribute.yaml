@@ -1,37 +1,17 @@
-formula: (sigmoid (+ (* a x) b))
-numberOfOperands: 1
-symbol: sin
+numberOfOperands: 2
+symbol: *
 params:
-      - id: p1
-        numberOfOperands: 2
-        symbol: +
-        params:
-          - id: p1
-            numberOfOperands: 2
-            symbol: *
-            params:
-                - id: h1
-                  source: hdfs
-                  path: D:\code\people.txt
-                  dataType: text
-                  columnSplitSymbol: \s
-                  variables:
-                     a:
-                       num: 1
-                       dataType: Double
-                - id: h2
-                  source: hdfs
-                  path: D:\code\people.txt
-                  dataType: text
-                  variables:
-                     a:
-                      num: 0
-                      dataType: Double
-          - id: p2
-            source: hdfs
-            path: D:\code\people.txt
-            dataType: text
-            variables:
-                a:
-                  num: 2
-                  dataType: Double
+      - source: hdfs
+        path: D:\code\people.txt
+        dataType: text
+        variables:
+          a:
+            num: 0
+            dataType: Double
+      - source: hdfs
+        path: D:\code\people.txt
+        dataType: text
+        variables:
+          a:
+            num: 1
+            dataType: Double
