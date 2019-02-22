@@ -9,30 +9,39 @@ sources:
            num: 1
            dataType: json
            param: age
-           paramType: Double
+           paramType: 字段类型(目前只支持数字类型)
         公式变量名2:
            num: 0
-           dataType: Double
+           paramType: 字段类型
     - source: hdfs
       path: /xx/xxx/xxx
       dataType: json
       variables:
-        公式变量名2:
+        公式变量名3:
           dataType: json
           param: house.total_showing_cnt
-          paramType: Double
+          paramType: 字段类型
     - source: mysql
       ip: ip
       port: port
       database: database
       tables:
         - table: 表名
-           - columns:
-                a:
+           - variables:
+                公式变量名4:
                   name: 字段名
-                  dataType: 字段类型
-
-
+                  paramType: 字段类型
+    - source: redis
+      ip: ip
+      port: port
+      password: password
+      key:
+        name: key名称
+        type: key类型(map、set、list)
+        variables:
+          公式变量名5:
+            param: house.total_showing_cnt
+            paramType: 字段类型
 out:
   type: hdfs
   path: /xx/xx
