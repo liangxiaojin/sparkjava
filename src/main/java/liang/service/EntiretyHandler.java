@@ -72,7 +72,7 @@ public class EntiretyHandler {
                 VariableRegistry variableRegistry = new VariableRegistry();
                 Expr expression = Expression.parse(formula, variableRegistry);
                 for(Integer order : paramOrder){
-                    variableRegistry.findVariable(finalVariableMap.get(paramOrder.get(paramOrder.get(order)))).setValue(Integer.valueOf(columns[order]));
+                    variableRegistry.findVariable(finalVariableMap.get(paramOrder.get(paramOrder.get(order)))).setValue(Double.valueOf(columns[order]));
                 }
                 return expression.evaluate();
             }
