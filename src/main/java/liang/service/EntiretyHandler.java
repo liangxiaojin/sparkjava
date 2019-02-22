@@ -39,10 +39,17 @@ public class EntiretyHandler {
         }
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkContext);
 
-        final Map<Integer,String> variables = feature.getVariables();
+        Map<Integer,String> variableMap = new HashMap<Integer, String>();
+        String[] variables =  feature.getVariables().split(" ");
+        for (int i= 0;i<variables.length;i++){
+            //0:a 1:x 2:b
+            variableMap.put(i,variables[i]);
+        }
+        final  Map<Integer,String> finalVariableMap = variableMap;
+
         final String formula = feature.getFormula();
 
-        final List<Integer> paramOrder = new ArrayList<Integer>(variables.keySet());
+        final List<Integer> paramOrder = new ArrayList<Integer>(variableMap.keySet());
         Collections.sort(paramOrder);
 
         List<Map<String,Object>> sources = feature.getSources();
@@ -51,11 +58,12 @@ public class EntiretyHandler {
             getSource(javaSparkContext,source,rddMap);
         }
 
-        JavaPairRDD allRdd = rddMap.get(variables.get(paramOrder.get(0)));
+        JavaPairRDD allRdd = rddMap.get(variableMap.get(paramOrder.get(0)));
         for (int i=paramOrder.get(0);i<paramOrder.size()-1;i++){
-            allRdd = allRdd.join(rddMap.get(variables.get(paramOrder.get(paramOrder.get(i)+1))));
+            allRdd = allRdd.join(rddMap.get(variableMap.get(paramOrder.get(paramOrder.get(i)+1))));
         }
 
+        System.out.println("allRdd:"+allRdd.collectAsMap());
 
         JavaPairRDD<String,Double> ll = allRdd.mapValues(new Function<Tuple2<String,String>, Double>() {
             public Double call(Tuple2<String,String> tuple2) throws Exception {
@@ -64,7 +72,7 @@ public class EntiretyHandler {
                 VariableRegistry variableRegistry = new VariableRegistry();
                 Expr expression = Expression.parse(formula, variableRegistry);
                 for(Integer order : paramOrder){
-                    variableRegistry.findVariable(variables.get(paramOrder.get(paramOrder.get(order)))).setValue(Integer.valueOf(columns[order]));
+                    variableRegistry.findVariable(finalVariableMap.get(paramOrder.get(paramOrder.get(order)))).setValue(Integer.valueOf(columns[order]));
                 }
                 return expression.evaluate();
             }
@@ -80,6 +88,7 @@ public class EntiretyHandler {
         Map<String,Map<String,Object>> source_1_variables =(Map<String,Map<String,Object>>) source.get("variables");
         List<String> keySet = new ArrayList<String>(source_1_variables.keySet());
         for (final String key : keySet){
+            //key: x b a
              getPariRDD(key,source_1_variables,javaSparkContext,source,rddMap);
         }
 
@@ -108,6 +117,7 @@ public class EntiretyHandler {
                 return new Tuple2<String, String>(i+"",columns[num]);
             }
         });
+        //0:x 1:b  2:a
         rddMap.put(key,x);
     }
 

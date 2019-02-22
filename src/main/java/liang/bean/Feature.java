@@ -6,17 +6,17 @@ import java.util.Map;
 
 public class Feature {
     private String formula;
-    private Map<Integer,String> variables;
+    private String variables;
     private List<Map<String,Object>> sources;
     private Integer numberOfOperands;
     private String symbol;
     private List<Map<String,Object>> params;
 
-    public Map<Integer, String> getVariables() {
+    public String getVariables() {
         return variables;
     }
 
-    public void setVariables(Map<Integer, String> variables) {
+    public void setVariables(String variables) {
         this.variables = variables;
     }
 
