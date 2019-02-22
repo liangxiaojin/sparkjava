@@ -38,16 +38,16 @@ public class EntiretyHandler {
             e.printStackTrace();
         }
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkContext);
-
+        final String formula = feature.getFormula();
         Map<Integer,String> variableMap = new HashMap<Integer, String>();
-        String[] variables =  feature.getVariables().split(" ");
-        for (int i= 0;i<variables.length;i++){
-            //0:a 1:x 2:b
-            variableMap.put(i,variables[i]);
+        List<String> variables = new ArrayList<String>();
+        Expression.variables(formula,variables);
+
+        for (int i= 0;i<variables.size();i++){
+            variableMap.put(i,variables.get(i));
         }
         final  Map<Integer,String> finalVariableMap = variableMap;
 
-        final String formula = feature.getFormula();
 
         final List<Integer> paramOrder = new ArrayList<Integer>(variableMap.keySet());
         Collections.sort(paramOrder);

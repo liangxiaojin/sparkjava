@@ -1,58 +1,39 @@
-features:
-  - sources:
-      - hdfs
-      - mysql
-    formula: (sigmoid (+ (* a x) b))
-    paths:
-      - path: D:\code\people.txt
-        split: ,
-        dataType: text
-        variables:
-          x: 0
+formula:  公式
+sources:
+    - source: hdfs
+      path: /xx/xxx/xxx
+      dataType: text
+      columnSplitSymbol: \t
+      variables:
+        公式变量名1:
+           num: 1
+           dataType: json
+           param: age
+           paramType: Double
+        公式变量名2:
+           num: 0
+           dataType: Double
+    - source: hdfs
+      path: /xx/xxx/xxx
+      dataType: json
+      variables:
+        公式变量名2:
+          dataType: json
+          param: house.total_showing_cnt
+          paramType: Double
+    - source: mysql
+      ip: ip
+      port: port
+      database: database
+      tables:
+        - table: 表名
+           - columns:
+                a:
+                  name: 字段名
+                  dataType: 字段类型
 
-    datasources:
-      - datasource:
-          url: jdbc:mysql://10.26.9.29:6377/search_C_knowledge?useUnicode=true&amp;characterEncoding=utf-8&amp;autoReconnect=true
-          driver-class-name: com.mysql.jdbc.Driver
-          type: com.alibaba.druid.pool.DruidDataSource
-          username: root
-          password: spiderMysql
-        variables:
-          a: table1.total_showing_cnt
-          b: table2.week_showing_cnt
 
+out:
+  type: hdfs
+  path: /xx/xx
 
-
-features:
-   - sources:
-          - hdfs
-          - redis
-          - mysql
-     formula: (sigmoid (+ (* a x) b))
-     paths:
-          - path: /xx/xxx/xxx.txt
-            variables:
-              x: column1
-          - path: /xx/xxx/xxx.txt
-            variables:
-              a: column1
-              b: column2
-     datasources:
-          - datasource:
-                url: jdbc:mysql://ip:port/database?useUnicode=true&amp;characterEncoding=utf-8&amp;autoReconnect=true
-                driver-class-name: com.mysql.jdbc.Driver
-                type: com.alibaba.druid.pool.DruidDataSource
-                username: username
-                password: pwd
-             variables:
-               a: table1.total_showing_cnt
-               b: table2.week_showing_cnt
-     redises:
-        -  redis:
-             host: 10.26.9.109
-             port: 6379
-             password: beike123456
-           variables:
-               c: key.total_showing_cnt
-  - sources:
-       - hdfs

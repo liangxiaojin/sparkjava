@@ -1,5 +1,4 @@
 formula: (sigmoid (+ (* a x) b))
-variables: a x b
 sources:
   - source: hdfs
     path: D:\code\people.txt

@@ -1,24 +1,14 @@
 package liang.bean;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Feature {
     private String formula;
-    private String variables;
     private List<Map<String,Object>> sources;
     private Integer numberOfOperands;
     private String symbol;
     private List<Map<String,Object>> params;
-
-    public String getVariables() {
-        return variables;
-    }
-
-    public void setVariables(String variables) {
-        this.variables = variables;
-    }
 
     public Integer getNumberOfOperands() {
         return numberOfOperands;
