@@ -14,9 +14,12 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 import org.ho.yaml.Yaml;
 import scala.Tuple2;
+import scala.util.matching.Regex;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class EntiretyHandler {
     static transient SparkContext sparkContext;
@@ -46,11 +49,8 @@ public class EntiretyHandler {
         for (int i= 0;i<variables.size();i++){
             variableMap.put(i,variables.get(i));
         }
-        final  Map<Integer,String> finalVariableMap = variableMap;
-
 
         final List<Integer> paramOrder = new ArrayList<Integer>(variableMap.keySet());
-        Collections.sort(paramOrder);
 
         List<Map<String,Object>> sources = feature.getSources();
         Map<String,JavaPairRDD> rddMap = new HashMap<String, JavaPairRDD>();
@@ -59,8 +59,9 @@ public class EntiretyHandler {
         }
 
         JavaPairRDD allRdd = rddMap.get(variableMap.get(paramOrder.get(0)));
-        for (int i=paramOrder.get(0);i<paramOrder.size()-1;i++){
-            allRdd = allRdd.join(rddMap.get(variableMap.get(paramOrder.get(paramOrder.get(i)+1))));
+        for (int i=1;i<paramOrder.size();i++){
+            System.out.println(variableMap.get(paramOrder.get(i)));
+            allRdd = allRdd.join(rddMap.get(variableMap.get(paramOrder.get(i))));
         }
 
         System.out.println("allRdd:"+allRdd.collectAsMap());
@@ -112,6 +113,7 @@ public class EntiretyHandler {
                 return new Tuple2<String, String>(i+"",columns[num]);
             }
         });
+        System.out.println("rdd: "+x.collectAsMap());
         //0:x 1:b  2:a
         rddMap.put(key,x);
     }
