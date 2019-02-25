@@ -24,24 +24,27 @@ sources:
     - source: mysql
       ip: ip
       port: port
+      driver: driver
+      username: username
+      password: password
       database: database
       tables:
-        - table: 表名
-           - variables:
-                公式变量名4:
-                  name: 字段名
-                  paramType: 字段类型
+        - tableName: 表名
+          variables:
+              公式变量名4:
+              name: 字段名
+              paramType: 字段类型
     - source: redis
       ip: ip
       port: port
       password: password
-      key:
-        name: key名称
-        type: key类型(map、set、list)
-        variables:
-          公式变量名5:
-            param: house.total_showing_cnt
-            paramType: 字段类型
+      keys:
+        - name: key名称
+          type: key类型(map、set、list)
+          variables:
+            公式变量名5:
+              param: house.total_showing_cnt
+              paramType: 字段类型
 out:
   type: hdfs
   path: /xx/xx
