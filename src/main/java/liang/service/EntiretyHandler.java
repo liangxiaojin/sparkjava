@@ -69,12 +69,7 @@ public class EntiretyHandler {
             public Double call(Tuple2<String,String> tuple2) throws Exception {
                 String tuple =  tuple2.toString();
                 String[] columns = tuple.replace("(","").replace(")","").split(",");
-                VariableRegistry variableRegistry = new VariableRegistry();
-                Expr expression = Expression.parse(formula, variableRegistry);
-                for(Integer order : paramOrder){
-                    variableRegistry.findVariable(finalVariableMap.get(paramOrder.get(paramOrder.get(order)))).setValue(Double.valueOf(columns[order]));
-                }
-                return expression.evaluate();
+                return Expression.evaluate(formula,Arrays.asList(columns));
             }
         });
         System.out.println(ll.collectAsMap());
