@@ -33,6 +33,7 @@ public class EntiretyHandler {
         SPARK_CONF.set("spark.driver.maxResultSize", "6g");
         SPARK_CONF.setAppName("SugLog");
         sparkContext = new SparkContext(SPARK_CONF);
+        //读取yaml文件
         File dumpFile = new File(System.getProperty("user.dir") + "\\src\\main\\resources\\entirety.yaml");
         Feature feature = null;
         try {
@@ -41,23 +42,27 @@ public class EntiretyHandler {
             e.printStackTrace();
         }
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkContext);
+        //获取yaml中的公式，公式中的变量
         final String formula = feature.getFormula();
         Map<Integer,String> variableMap = new HashMap<Integer, String>();
         List<String> variables = new ArrayList<String>();
         Expression.variables(formula,variables);
 
+        //公式变量index及变量的map
         for (int i= 0;i<variables.size();i++){
             variableMap.put(i,variables.get(i));
         }
 
         final List<Integer> paramOrder = new ArrayList<Integer>(variableMap.keySet());
 
+        //通过数据源获取需要的数据，放入rddMap，key是变量名，value是具体列值
         List<Map<String,Object>> sources = feature.getSources();
         Map<String,JavaPairRDD> rddMap = new HashMap<String, JavaPairRDD>();
         for (Map<String,Object> source : sources){
             getSource(javaSparkContext,source,rddMap);
         }
 
+        //按变量顺序join rdd
         JavaPairRDD allRdd = rddMap.get(variableMap.get(paramOrder.get(0)));
         for (int i=1;i<paramOrder.size();i++){
             System.out.println(variableMap.get(paramOrder.get(i)));
@@ -66,6 +71,7 @@ public class EntiretyHandler {
 
         System.out.println("allRdd:"+allRdd.collectAsMap());
 
+        //放入公式计算
         JavaPairRDD<String,Double> ll = allRdd.mapValues(new Function<Tuple2<String,String>, Double>() {
             public Double call(Tuple2<String,String> tuple2) throws Exception {
                 String tuple =  tuple2.toString();
