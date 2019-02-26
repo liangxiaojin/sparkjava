@@ -7,6 +7,9 @@ sources:
     variables:
       x:
         num: 0
+        missing:
+          way: assign
+          value: 1.0
       b:
         num: 2
   - source: hdfs

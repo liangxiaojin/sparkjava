@@ -4,6 +4,7 @@ import com.lianjia.aisearch.featurefu.expr.Expr;
 import com.lianjia.aisearch.featurefu.expr.Expression;
 import com.lianjia.aisearch.featurefu.expr.VariableRegistry;
 import liang.bean.Feature;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -103,6 +104,7 @@ public class EntiretyHandler {
         String path = source.get("path").toString();
         final String columnSplitSymbol = source.get("columnSplitSymbol").toString();
         final int num = (Integer) source_1_variables.get(key).get("num");
+        final Map<String,Object> missing = (Map<String,Object>) source_1_variables.get(key).get("missing");
 
         JavaRDD<String> data = javaSparkContext.textFile(path);
         JavaRDD<String> lines =  data.flatMap(new FlatMapFunction<String, String>() {
@@ -110,13 +112,30 @@ public class EntiretyHandler {
                 return Arrays.asList(s.split("\\r\\n")).iterator();
             }
         });
-
-        JavaPairRDD<String,String> x = lines.mapToPair(new PairFunction<String, String, String>() {
-            int i=0;
-            public Tuple2<String, String> call(String s) throws Exception {
-                i++;
+        JavaRDD<List<String>> missingRDD = lines.map(new Function<String, List<String>>() {
+            public List<String> call(String s) throws Exception {
                 String[] columns = s.split(columnSplitSymbol);
-                return new Tuple2<String, String>(i+"",columns[num]);
+                if (null != missing){
+                    String missingWay =(String) missing.get("way");
+                    Double value = (Double)  missing.get("value");
+                    for (int i =0 ;i<columns.length;i++){
+                        if (StringUtils.isBlank(columns[i])){
+                            if ("assign".equals(missingWay)){
+                                columns[i] = value+"";
+                            }
+                        }
+                    }
+                }
+                return Arrays.asList(columns);
+            }
+        });
+
+
+        JavaPairRDD<String,String> x = missingRDD.mapToPair(new PairFunction<List<String>, String, String>() {
+            int i=0;
+            public Tuple2<String, String> call(List<String> s) throws Exception {
+                i++;
+                return new Tuple2<String, String>(i+"",s.get(num));
             }
         });
         System.out.println("rdd: "+x.collectAsMap());

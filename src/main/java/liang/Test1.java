@@ -4,6 +4,7 @@ import com.lianjia.aisearch.featurefu.expr.Expr;
 import com.lianjia.aisearch.featurefu.expr.Expression;
 import com.lianjia.aisearch.featurefu.expr.VariableRegistry;
 import liang.bean.Features;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
@@ -50,22 +51,25 @@ public class Test1 implements Serializable {
                 }
             });
 
-
-            JavaRDD<Double> results =  lines.map(new Function<String,Double>() {
-                public Double call(String s) throws Exception {
-                    System.out.println(s);
+            JavaRDD<List<String>> missingResult =  lines.map(new Function<String,List<String>>() {
+                public List<String> call(String s) throws Exception {
                     String[] columns = s.split("\\s");
-                    VariableRegistry variableRegistry = new VariableRegistry();
-                    //parse expression with variables, use variableRegistry to register variables
-                    Expr expression = Expression.parse(feature.get("formula").toString(), variableRegistry);
-                    //retrieve variables from variableRegistry by name
-                    Map<String, Integer> variables = (Map<String, Integer>) feature.get("variables");
-                    List<String> variableKeyList = new ArrayList<String>(variables.keySet());
-                    //set variable values
-                    for (String variable : variableKeyList) {
-                        variableRegistry.findVariable(variable).setValue(Integer.valueOf(columns[variables.get(variable)]));
+                    for (int i =0 ;i<columns.length;i++){
+                        if (StringUtils.isBlank(columns[i])){
+                            columns[i] = "4";
+                        }
                     }
-                    return expression.evaluate();
+                    return Arrays.asList(columns);
+                }
+            });
+
+            System.out.println("missingResult:"+missingResult.collect());
+
+
+            JavaRDD<Double> results =  missingResult.map(new Function<List<String>,Double>() {
+                public Double call(List<String> s) throws Exception {
+                    System.out.println(s);
+                    return Expression.evaluate(feature.get("formula").toString(),s);
                 }
             });
 
