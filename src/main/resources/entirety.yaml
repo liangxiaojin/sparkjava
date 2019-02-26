@@ -6,19 +6,25 @@ sources:
     columnSplitSymbol: \s
     variables:
       x:
-        num: 0
+        joinLineNum: 0
+        num: 1
         missing:
           way: assign
+          value: 2.0
+        filter:
+          symbol: <=
           value: 1.0
       b:
-        num: 2
+        joinLineNum: 0
+        num: 3
   - source: hdfs
     path: D:\code\animal.txt
     dataType: text
     columnSplitSymbol: \s
     variables:
       a:
-        num: 1
+        joinLineNum: 0
+        num: 2
 out:
   type: hdfs
   path: D:\code\people.txt

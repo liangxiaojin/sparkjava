@@ -45,39 +45,39 @@ public class EntiretyHandler {
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkContext);
         //获取yaml中的公式，公式中的变量
         final String formula = feature.getFormula();
-        Map<Integer,String> variableMap = new HashMap<Integer, String>();
+        Map<Integer, String> variableMap = new HashMap<Integer, String>();
         List<String> variables = new ArrayList<String>();
-        Expression.variables(formula,variables);
+        Expression.variables(formula, variables);
 
         //公式变量index及变量的map
-        for (int i= 0;i<variables.size();i++){
-            variableMap.put(i,variables.get(i));
+        for (int i = 0; i < variables.size(); i++) {
+            variableMap.put(i, variables.get(i));
         }
 
         final List<Integer> paramOrder = new ArrayList<Integer>(variableMap.keySet());
 
         //通过数据源获取需要的数据，放入rddMap，key是变量名，value是具体列值
-        List<Map<String,Object>> sources = feature.getSources();
-        Map<String,JavaPairRDD> rddMap = new HashMap<String, JavaPairRDD>();
-        for (Map<String,Object> source : sources){
-            getSource(javaSparkContext,source,rddMap);
+        List<Map<String, Object>> sources = feature.getSources();
+        Map<String, JavaPairRDD> rddMap = new HashMap<String, JavaPairRDD>();
+        for (Map<String, Object> source : sources) {
+            getSource(javaSparkContext, source, rddMap);
         }
 
         //按变量顺序join rdd
         JavaPairRDD allRdd = rddMap.get(variableMap.get(paramOrder.get(0)));
-        for (int i=1;i<paramOrder.size();i++){
+        for (int i = 1; i < paramOrder.size(); i++) {
             System.out.println(variableMap.get(paramOrder.get(i)));
             allRdd = allRdd.join(rddMap.get(variableMap.get(paramOrder.get(i))));
         }
 
-        System.out.println("allRdd:"+allRdd.collectAsMap());
+        System.out.println("allRdd:" + allRdd.collectAsMap());
 
         //放入公式计算
-        JavaPairRDD<String,Double> ll = allRdd.mapValues(new Function<Tuple2<String,String>, Double>() {
-            public Double call(Tuple2<String,String> tuple2) throws Exception {
-                String tuple =  tuple2.toString();
-                String[] columns = tuple.replace("(","").replace(")","").split(",");
-                return Expression.evaluate(formula,Arrays.asList(columns));
+        JavaPairRDD<String, Double> ll = allRdd.mapValues(new Function<Tuple2<String, String>, Double>() {
+            public Double call(Tuple2<String, String> tuple2) {
+                String tuple = tuple2.toString();
+                String[] columns = tuple.replace("(", "").replace(")", "").split(",");
+                return Expression.evaluate(formula, Arrays.asList(columns));
             }
         });
         System.out.println(ll.collectAsMap());
@@ -85,44 +85,62 @@ public class EntiretyHandler {
 
     }
 
-    private static void getSource(JavaSparkContext javaSparkContext,Map<String,Object> source,
-                           Map<String,JavaPairRDD> rddMap){
+    private static void getSource(JavaSparkContext javaSparkContext, Map<String, Object> source,
+                                  Map<String, JavaPairRDD> rddMap) {
 
-        Map<String,Map<String,Object>> source_1_variables =(Map<String,Map<String,Object>>) source.get("variables");
+        Map<String, Map<String, Object>> source_1_variables = (Map<String, Map<String, Object>>) source.get("variables");
         List<String> keySet = new ArrayList<String>(source_1_variables.keySet());
-        for (final String key : keySet){
+        for (final String key : keySet) {
             //key: x b a
-             getPariRDD(key,source_1_variables,javaSparkContext,source,rddMap);
+            getPariRDD(key, source_1_variables, javaSparkContext, source, rddMap);
         }
 
     }
 
 
-    private static void getPariRDD(String key,Map<String,Map<String,Object>> source_1_variables,
-                                                  JavaSparkContext javaSparkContext,Map<String,Object> source,
-                                                  Map<String,JavaPairRDD> rddMap){
+    private static void getPariRDD(String key, Map<String, Map<String, Object>> source_1_variables,
+                                   JavaSparkContext javaSparkContext, Map<String, Object> source,
+                                   Map<String, JavaPairRDD> rddMap) {
         String path = source.get("path").toString();
         final String columnSplitSymbol = source.get("columnSplitSymbol").toString();
         final int num = (Integer) source_1_variables.get(key).get("num");
-        final Map<String,Object> missing = (Map<String,Object>) source_1_variables.get(key).get("missing");
+        final int joinLineNum = (Integer) source_1_variables.get(key).get("joinLineNum");
+
+        final Map<String, Object> missing = (Map<String, Object>) source_1_variables.get(key).get("missing");
+        final Map<String, Object> filter = (Map<String, Object>) source_1_variables.get(key).get("filter");
 
         JavaRDD<String> data = javaSparkContext.textFile(path);
-        JavaRDD<String> lines =  data.flatMap(new FlatMapFunction<String, String>() {
+        JavaRDD<String> lines = data.flatMap(new FlatMapFunction<String, String>() {
             public Iterator<String> call(String s) throws Exception {
                 return Arrays.asList(s.split("\\r\\n")).iterator();
             }
         });
-        JavaRDD<List<String>> missingRDD = lines.map(new Function<String, List<String>>() {
+        //filter
+        JavaRDD<String> filterRDD = lines.filter(new Function<String, Boolean>() {
+            public Boolean call(String s) throws Exception {
+                String[] columns = s.split(columnSplitSymbol);
+                if (null != filter) {
+                    String filterSymbol = (String) filter.get("symbol");
+                    Double value = (Double) filter.get("value");
+                    return Expression.evaluate("(" + filterSymbol + " " + columns[num] + " " + value + ")") == 0D;
+                }else {
+                    return true;
+                }
+            }
+        });
+
+        System.out.println(" filterRdd:"+filterRDD.collect());
+
+        //缺失值填充
+        JavaRDD<List<String>> missingRDD = filterRDD.map(new Function<String, List<String>>() {
             public List<String> call(String s) throws Exception {
                 String[] columns = s.split(columnSplitSymbol);
-                if (null != missing){
-                    String missingWay =(String) missing.get("way");
-                    Double value = (Double)  missing.get("value");
-                    for (int i =0 ;i<columns.length;i++){
-                        if (StringUtils.isBlank(columns[i])){
-                            if ("assign".equals(missingWay)){
-                                columns[i] = value+"";
-                            }
+                if (null != missing) {
+                    String missingWay = (String) missing.get("way");
+                    Double value = (Double) missing.get("value");
+                    if (StringUtils.isBlank(columns[num])) {
+                        if ("assign".equals(missingWay)) {
+                            columns[num] = value + "";
                         }
                     }
                 }
@@ -131,18 +149,15 @@ public class EntiretyHandler {
         });
 
 
-        JavaPairRDD<String,String> x = missingRDD.mapToPair(new PairFunction<List<String>, String, String>() {
-            int i=0;
+        JavaPairRDD<String, String> x = missingRDD.mapToPair(new PairFunction<List<String>, String, String>() {
             public Tuple2<String, String> call(List<String> s) throws Exception {
-                i++;
-                return new Tuple2<String, String>(i+"",s.get(num));
+                return new Tuple2<String, String>(s.get(joinLineNum), s.get(num));
             }
         });
-        System.out.println("rdd: "+x.collectAsMap());
+        System.out.println("rdd: " + x.collectAsMap());
         //0:x 1:b  2:a
-        rddMap.put(key,x);
+        rddMap.put(key, x);
     }
-
 
 
 }
