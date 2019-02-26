@@ -1,5 +1,7 @@
 package liang.bean;
 
+import com.lianjia.aisearch.machinelearning.operator.Bean.Feature;
+
 import java.util.List;
 
 public class Features {

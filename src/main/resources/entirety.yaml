@@ -5,26 +5,27 @@ sources:
     dataType: text
     columnSplitSymbol: \s
     variables:
-      x:
+      - name: x
         joinLineNum: 0
         num: 1
+        dataType: json
+        param: people.age
         missing:
           way: assign
           value: 2.0
         filter:
           symbol: <=
           value: 1.0
-      b:
+      - name: b
         joinLineNum: 0
         num: 3
+        dataType: text
   - source: hdfs
     path: D:\code\animal.txt
     dataType: text
     columnSplitSymbol: \s
     variables:
-      a:
-        joinLineNum: 0
-        num: 2
-out:
-  type: hdfs
-  path: D:\code\people.txt
+       - name: a
+         joinLineNum: 0
+         num: 2
+         dataType: text
