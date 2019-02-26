@@ -6,6 +6,7 @@ sources:
       columnSplitSymbol: \t
       variables:
         公式变量名1:
+           joinLineNum: 0
            num: 1
            dataType: json
            param: age
@@ -16,8 +17,15 @@ sources:
               way: assign
               #如果是assign指定值，value为具体指，Double类型
               value: 1.0
+           #过滤
+           filter:
+              #过滤操作符，目前支持== != > >= < <= || &&
+              symbol: <=
+              #过滤值
+              value: 1.0
         公式变量名2:
-           num: 0
+           joinLineNum: 0
+           num: 2
            paramType: 字段类型
     - source: hdfs
       path: /xx/xxx/xxx
@@ -25,6 +33,8 @@ sources:
       variables:
         公式变量名3:
           dataType: json
+          joinParam: house.house_code
+          joinParamType: 字段类型
           param: house.total_showing_cnt
           paramType: 字段类型
     - source: mysql
