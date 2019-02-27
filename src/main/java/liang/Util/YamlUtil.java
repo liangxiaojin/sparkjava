@@ -4,15 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
-import com.lianjia.aisearch.machinelearning.operator.Bean.Feature;
+import liang.bean.Feature;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 public class YamlUtil {
 
-    public Feature readYaml() throws FileNotFoundException, YamlException {
+    public Feature readYaml(String fileName) throws FileNotFoundException, YamlException {
         ClassLoader classLoader = getClass().getClassLoader();
-        String path = classLoader.getResource("entirety.yaml").getPath();
+        String path = classLoader.getResource(fileName).getPath();
         YamlReader reader = new YamlReader(new FileReader(path));
         Feature feature = reader.read(Feature.class);
         return feature;

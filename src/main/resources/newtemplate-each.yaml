@@ -1,0 +1,93 @@
+#非必填，预处理：缺失值填充、过滤；数据整合输出到一个文件，用于计算
+pretreatment:
+  #必填，数据源集合
+  sources:
+     #hdfs
+     hdfsSource:
+          #必填，文件路径
+        - path: /xx/xxx/xxx
+          #必填，列分隔符
+          columnSplitSymbol: \t
+          #必填，主键
+          primaryField:
+             #必填，主键值在文件中的列index
+             num: 0
+             #必填，该列的数据类型，json或者text，json做解析，text是直接值
+             dataType: json/text
+             #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+             field: people.id
+          #必填，列集合
+          originFields:
+             #必填，在文件中的列index
+             - num: 0
+               #必填，该列的数据类型，json或者text，json做解析，text是直接值
+               dataType: json/text
+               #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+               field: people.age
+               #必填，缺失值填充
+               missing:
+                  #必填，填充方式，assign指定值，median中位数，average均值
+                  way: assign
+                  #必填，如果是assign指定值，value为具体指，Double类型
+                  value: 1.0
+               #非必填，过滤
+               filter:
+                  #必填，过滤操作符，目前支持== != > >= < <= || &&
+                  symbol: <=
+                  #必填，过滤值
+                  value: 1.0
+      #mysql
+      mysqlSource:
+        - ip: ip
+          port: port
+          driver: driver
+          username: username
+          password: password
+          database: database
+          #必填，表集合
+          tables:
+              #必填，查询sql语句
+            - sql: sql语句
+              #必填，主键
+              primaryField:
+                 #必填：主键字段名
+                 name: 字段名
+                  #必填，该列的数据类型，json或者text，json做解析，text是直接值
+                 dataType: json/text
+                 #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+                 field: people.id
+              #列集合
+              originFields:
+                   #必填：字段名
+                 - name: 字段名
+                   #必填，该列的数据类型，json或者text，json做解析，text是直接值
+                   dataType: json/text
+                   #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+                   field: people.height
+  #必填，输出到hdfs
+  out:
+    name: 文件名
+    path: /xx/xx
+
+#非必填，计算
+calculate:
+  #必填,公式
+  formula:  公式
+  #用于计算的数据源，hdfs文件
+  source:
+     path: /xx/xxx/xxx
+     dataType: text
+     columnSplitSymbol: \t
+     variables:
+        - name: 公式变量名
+          joinLineNum: 0
+          num: 1
+        - name: 公式变量名
+          joinLineNum: 0
+          num: 该变量的值在hdfs的列index
+        - name: 公式变量名
+          num: 3
+  #非必填，输出到hdfs
+  out:
+    name: 文件名
+    path: 文件路径

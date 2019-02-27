@@ -2,14 +2,11 @@ package liang.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.esotericsoftware.yamlbeans.YamlException;
-import com.esotericsoftware.yamlbeans.YamlReader;
-import com.lianjia.aisearch.featurefu.expr.Expr;
 import com.lianjia.aisearch.featurefu.expr.Expression;
-import com.lianjia.aisearch.featurefu.expr.VariableRegistry;
-import com.lianjia.aisearch.machinelearning.operator.Bean.*;
+import com.lianjia.aisearch.machinelearning.operator.Bean.Filter;
+import com.lianjia.aisearch.machinelearning.operator.Bean.Missing;
 import com.lianjia.aisearch.machinelearning.operator.Service.Impl.PretreatmentServiceImpl;
 import com.lianjia.aisearch.machinelearning.operator.Service.PretreatmentService;
-import javafx.scene.control.Separator;
 import liang.Util.YamlUtil;
 import liang.bean.*;
 import org.apache.commons.lang.StringUtils;
@@ -22,7 +19,6 @@ import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.PairFunction;
 import scala.Tuple2;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
@@ -40,10 +36,8 @@ public class EntiretyHandler  {
         SPARK_CONF.setAppName("SugLog");
         sparkContext = new SparkContext(SPARK_CONF);
         //读取yaml文件
-        File dumpFile = new File(System.getProperty("user.dir") + "\\src\\main\\resources\\entirety.yaml");
         YamlUtil entiretyHandler = new YamlUtil();
-        Feature feature = entiretyHandler.readYaml();
-
+        Feature feature = entiretyHandler.readYaml("newentirety.yaml");
 
 
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkContext);
@@ -61,11 +55,9 @@ public class EntiretyHandler  {
         final List<Integer> paramOrder = new ArrayList<Integer>(variableMap.keySet());
 
         //通过数据源获取需要的数据，放入rddMap，key是变量名，value是具体列值
-        List<Source> sources = feature.getSources();
         Map<String, JavaPairRDD> rddMap = new HashMap<String, JavaPairRDD>();
-        for (Source source : sources) {
-            getSource(javaSparkContext, source, rddMap);
-        }
+        getSource(javaSparkContext, feature, rddMap);
+
 
         //按变量顺序join rdd
         JavaPairRDD  allRdd = rddMap.get(variableMap.get(paramOrder.get(0)));
@@ -91,30 +83,32 @@ public class EntiretyHandler  {
 
 
 
-    private static void getSource(JavaSparkContext javaSparkContext, Source source,
+    private static void getSource(JavaSparkContext javaSparkContext,Feature  feature,
                                   Map<String, JavaPairRDD> rddMap) {
-
-        List<VariableObj> source_1_variables =  source.getVariables();
-        for (VariableObj variable : source_1_variables) {
-            //key: x b a
-            System.out.println(" variable name : "+variable.getName());
-            getPariRDD(variable.getName(), variable, javaSparkContext, source, rddMap);
+        List<HdfsSource> hdfsSources = feature.getHdfsSource();
+        for (HdfsSource hdfsSource : hdfsSources){
+            String splitSymbol = hdfsSource.getColumnSplitSymbol();
+            List<Field> fields = hdfsSource.getOriginFields();
+            String path = hdfsSource.getPath();
+            Field primaryField = hdfsSource.getPrimaryField();
+            for (Field field : fields) {
+                //key: x b a
+                System.out.println(" variable name : "+field.getVariableName());
+                getPariRDD(path, splitSymbol,field, javaSparkContext, rddMap,primaryField.getNum());
+            }
         }
-
     }
 
 
-    private static void getPariRDD(String key, final VariableObj variable,
-                                   JavaSparkContext javaSparkContext, Source source,
-                                   Map<String, JavaPairRDD> rddMap) {
-        String path = source.getPath();
-        final String columnSplitSymbol = source.getColumnSplitSymbol();
-        final int num = variable.getNum();
-        final int joinLineNum = variable.getJoinLineNum();
-        final Filter filter = variable.getFilter();
-        final Missing missing = variable.getMissing();
-        final String dataType = variable.getDataType();
-        final String param = variable.getParam();
+    private static void getPariRDD(String path,final String splitSymbol, final Field field,
+                                   JavaSparkContext javaSparkContext, Map<String, JavaPairRDD> rddMap,
+                                   final int primaryNum) {
+        String key = field.getVariableName();
+        final int num = field.getNum();
+        final Filter filter = field.getFilter();
+        final Missing missing = field.getMissing();
+        final String dataType = field.getDataType();
+        final String fieldName = field.getFieldName();
 
         JavaRDD<String> data = javaSparkContext.textFile(path);
         JavaRDD<String> lines = data.flatMap(new FlatMapFunction<String, String>() {
@@ -123,86 +117,19 @@ public class EntiretyHandler  {
             }
         });
         PretreatmentService pretreatmentService = new PretreatmentServiceImpl();
-        JavaRDD<List<String>> datas = pretreatmentService.separate(lines,columnSplitSymbol); ;
-        //分解
-        if ("json".equals(dataType)){
-            datas = datas.map(new Function<List<String>, List<String>>() {
-                public List<String> call(List<String> s) throws Exception {
-                    String kk = s.get(num);
-                    JSONObject jsonObject = JSONObject.parseObject(kk);
-                    String[] fields = param.split("\\.");
-                    String paramValue = "";
-                    for (int i=0;i<fields.length;i++){
-                        if (i == fields.length-1){
-                            paramValue = jsonObject.getString(fields[i]);
-                        }else {
-                            jsonObject = jsonObject.getJSONObject(fields[i]);
-                        }
-                    }
-                    s.set(num,paramValue);
-                    return s;
-                }
-            });
-        }
+        JavaRDD<List<String>> datas = pretreatmentService.separate(lines,splitSymbol,num,fieldName,dataType);
         System.out.println("datas:"+datas.collect());
 
         //filter
-        JavaRDD<List<String>> filterRDD1 ;
-
-        if ("json".equals(dataType)){
-            filterRDD1 = datas.filter(new Function<List<String>, Boolean>() {
-                public Boolean call(List<String> s) throws Exception {
-                    String kk = s.get(num);
-                    if (null != filter){
-                        String filterSymbol = filter.getSymbol();
-                        Double value = filter.getValue();
-                        StringBuilder stringBuilder = new StringBuilder("");
-                        stringBuilder.append("(");
-                        stringBuilder.append(filterSymbol);
-                        stringBuilder.append(" ");
-                        stringBuilder.append(kk);
-                        stringBuilder.append(" ");
-                        stringBuilder.append(value);
-                        stringBuilder.append(")");
-                        return Expression.evaluate(stringBuilder.toString()) == 0D;
-                    }else {
-                        return true;
-                    }
-                }
-            });
-        }else {
-            JavaRDD<List<String>> s = pretreatmentService.separate(lines,columnSplitSymbol);
-            filterRDD1 = pretreatmentService.filter(s,variable);
-        }
-
+        JavaRDD<List<String>> filterRDD1 = pretreatmentService.filter(datas,num,filter);
         System.out.println("filterRDD1:"+filterRDD1.collect());
 
-        JavaRDD<List<String>> missingRDD ;
-
-        if ("json".equals(dataType)){
-            missingRDD = filterRDD1.map(new Function<List<String>, List<String>>() {
-                public List<String> call(List<String> s) throws Exception {
-                    String kk = s.get(num);
-                    if (null != missing) {
-                        String missingWay = missing.getWay();
-                        Double value = missing.getValue();
-                        if (StringUtils.isBlank(kk)) {
-                            if ("assign".equals(missingWay)) {
-                                s.set(num,value+"");
-                            }
-                        }
-                    }
-                    return s;
-                }
-            });
-        }else {
-            missingRDD = pretreatmentService.missingFill(filterRDD1,variable);
-        }
+        JavaRDD<List<String>> missingRDD = pretreatmentService.missingFill(filterRDD1,num,missing);
         System.out.println("missingRDD:"+missingRDD.collect());
 
         JavaPairRDD<String, String> x = missingRDD.mapToPair(new PairFunction<List<String>, String, String>() {
             public Tuple2<String, String> call(List<String> s) throws Exception {
-                return new Tuple2<String, String>(s.get(joinLineNum), s.get(num));
+                return new Tuple2<String, String>(s.get(primaryNum), s.get(num));
             }
         });
         System.out.println("rdd: " + x.collectAsMap());

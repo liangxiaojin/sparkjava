@@ -1,0 +1,72 @@
+#必填,公式
+formula:  公式
+#hdfs数据源集合
+hdfsSource:
+     #必填，文件路径
+   - path: /xx/xxx/xxx
+     #必填，列分隔符
+     columnSplitSymbol: \t
+     #必填，主键
+     primaryField:
+        #必填，主键值在文件中的列index
+        num: 0
+        #必填，该列的数据类型，json或者text，json做解析，text是直接值，默认text
+        dataType: json/text
+        #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+        fieldName: people.id
+     #必填，列集合
+     originFields:
+        #必填，在文件中的列index
+        - variableName: x
+          num: 0
+          #必填，该列的数据类型，json或者text，json做解析，text是直接值，默认text
+          dataType: json/text
+          #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+          fieldName: people.age
+          #必填，缺失值填充
+          missing:
+             #必填，填充方式，assign指定值，median中位数，average均值
+             way: assign
+             #必填，如果是assign指定值，value为具体指，Double类型
+             value: 1.0
+          #非必填，过滤
+          filter:
+             #必填，过滤操作符，目前支持== != > >= < <= || &&
+             symbol: <=
+             #必填，过滤值
+             value: 1.0
+ #mysql数据源集合
+ mysqlSource:
+   - ip: ip
+     port: port
+     driver: driver
+     username: username
+     password: password
+     database: database
+     #必填，表集合
+     tables:
+         #必填，查询sql语句
+       - sql: sql语句
+         #必填，主键
+         primaryField:
+            #必填：主键字段名
+            name: 字段名
+             #必填，该列的数据类型，json或者text，json做解析，text是直接值，默认text
+            dataType: json/text
+            #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+            fieldName: people.id
+         #列集合
+         originFields:
+              #必填：字段名
+            - variableName: y
+              name: 字段名
+              #必填，该列的数据类型，json或者text，json做解析，text是直接值，默认text
+              dataType: json/text
+              #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+              fieldName: people.height
+              #missing和filter同上
+#非必填，输出到hdfs
+out:
+  name: 文件名
+  path: /xx/xx
+

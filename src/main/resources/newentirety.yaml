@@ -1,0 +1,26 @@
+formula: (sigmoid (+ (* a x) b))
+hdfsSource:
+   - path: D:\code\people.txt
+     columnSplitSymbol: \s
+     primaryField:
+        num: 0
+     originFields:
+        - variableName: x
+          num: 1
+          dataType: json
+          fieldName: people.age
+        - variableName: b
+          num: 3
+          missing:
+             way: assign
+             value: 4.0
+   - path: D:\code\animal.txt
+     columnSplitSymbol: \s
+     primaryField:
+         num: 0
+     originFields:
+         - variableName: a
+           num: 2
+           missing:
+              way: assign
+              value: 3.0

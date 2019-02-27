@@ -1,0 +1,70 @@
+#预处理：缺失值填充、过滤、数据整合
+pretreatment:
+  sources:
+      - source: hdfs
+        path: /xx/xxx/xxx
+
+        columnSplitSymbol: \t
+        primaryField:
+           num: 0
+           dataType: json/text
+           param: people.id
+           paramType: 字段类型
+        originFields:
+           - num: 0
+             dataType: json/text
+             param: people.age
+             paramType: 字段类型
+             #缺失值填充
+             missing:
+                #填充方式，assign指定值，median中位数，average均值
+                way: assign
+                #如果是assign指定值，value为具体指，Double类型
+                value: 1.0
+             #过滤
+             filter:
+                #过滤操作符，目前支持== != > >= < <= || &&
+                symbol: <=
+                #过滤值
+                value: 1.0
+      - source: mysql
+        ip: ip
+        port: port
+        driver: driver
+        username: username
+        password: password
+        database: database
+        tables:
+          - sql: sql语句
+            primaryField:
+               name: 字段名
+               dataType: json/text
+               param: people.id
+            originFields:
+                - name: 字段名
+                  dataType: json/text
+                  param: people.height
+  out:
+    type: hdfs
+    path: /xx/xx
+
+#计算
+calculate:
+  formula:  公式
+  sources:
+      - source: hdfs
+        path: /xx/xxx/xxx
+        dataType: text
+        columnSplitSymbol: \t
+        variables:
+           - name: 公式变量名
+             joinLineNum: 0
+             num: 1
+           - name: 公式变量名
+             joinLineNum: 0
+             num: 该变量的值在hdfs的列index
+           - name: 公式变量名
+             num: 3
+  out:
+    type: hdfs
+    path: /xx/xx
