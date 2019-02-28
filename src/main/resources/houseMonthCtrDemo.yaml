@@ -1,0 +1,32 @@
+pretreatment:
+   operators:
+      - operator: join
+        name: x
+        join:
+           joinWay: fulloutjoin
+           fielda:
+              databaseType: hive
+              hiveSource:
+                url: ip:port/database
+                  ...
+                joinLine: house_id
+                sql: select house_id from tablea where create_time = 1week
+           fieldb:
+              type: hive
+              hiveSource:
+                url: ip:port/database
+                  ...
+                joinLine: house_id
+                sql: select house_id from tableb where create_time = 1week
+        out:
+           out: true/false
+           databaseType: hdfs/mysql/redis
+           database:
+              hdfs:
+      - operator: count
+        name: y
+        count:
+           databaseType: rdd
+           rdd: x
+           countkey: housid
+           countValue: click_num

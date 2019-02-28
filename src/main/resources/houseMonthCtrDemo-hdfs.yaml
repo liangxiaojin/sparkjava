@@ -1,0 +1,74 @@
+pretreatment:
+   operators:
+      - operator: join
+        name: x
+        join:
+           joinWay: fulloutjoin
+           fieldA:
+              databaseType: hdfs
+              hdfsSource:
+                 path: D:\code\people.txt
+                 columnSplitSymbol: \s
+                 joinField:
+                    num: 0
+                 originFields:
+                    - num: 1
+                      dataType: json
+                      fieldName: house.houseid
+                    - num: 3
+                      missing:
+                         way: assign
+                         value: 4.0
+           fieldB:
+              databaseType: hive
+              hiveSource:
+                url: ip:port/database
+                  ...
+                joinLine: house_id
+                sql: select data from tableb where create_time = 1week
+                joinField:
+                    dataType: json
+                    fieldName: data.fq
+                originFields:
+                    dataType: json
+                    fieldName: data.docs
+        out:
+           out: true/false
+           databaseType: hdfs/mysql/redis
+           database:
+              hdfs:
+              flatmap
+              flatmap
+
+      - operator: count
+        name: y
+        count:
+           databaseType: rdd
+           rdd:
+              variableName: x
+              countValue:
+                 dataType: json/text
+                 fieldName: house.click
+      - operator: count
+        name: h
+        count:
+           databaseType: rdd
+           rdd:
+              variableName: x
+              countValue:
+                 dataType: json/text
+                 fieldName: house.exposure
+      - operator: join
+        name: k
+        join:
+           joinWay: fulloutjoin
+           fieldA:
+              databaseType: rdd
+              rdd:
+                 variableName: y
+           fieldB:
+              databaseType: rdd
+              rdd:
+                 variableName: h
+
+

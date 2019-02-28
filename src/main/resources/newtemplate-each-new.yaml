@@ -1,0 +1,154 @@
+pretreatment:
+   operators:
+      - operator: join
+        name: x
+        join:
+          #两个source
+          joinWay: fulloutjoin
+          fielda:
+             databaseType: hive/hdfs/mysql/redis/rdd
+             hiveSource:
+                url: ip:port/database
+                  ...
+                sql:
+                joinField:
+                   orginField: 字段名
+                   #必填，该列的数据类型，json或者text，json做解析，text是直接值
+                   dataType: json/text
+                   #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+                   field: people.height
+                   storeField: 新字段名
+                originFields:
+                    #必填：字段名
+                  - orginField: 字段名
+                    #必填，该列的数据类型，json或者text，json做解析，text是直接值
+                    dataType: json/text
+                    #非必填，如果dataType是json，field为需要在json中的结构，以"."分隔
+                    field: people.height
+                    storeField: 新字段名
+             mysqlSource:
+                url:
+                ...
+                sql:
+                joinLine: 字段名
+             hdfsSource:
+                path:
+                joinLine: num
+                missing:
+                   - fieldIndex: 5
+                     way: assign
+                     value: 1.0
+             rdd: a
+          fieldb:
+             databaseType: hive/hdfs/mysql/redis/rdd
+             hiveSource:
+                url: ip:port/database
+                  ...
+                sql:
+                joinLine: 字段名
+             mysqlSource:
+                url:
+                ...
+                sql:
+                joinLine: 字段名
+             hdfsSource:
+                path:
+                joinLine: num
+             rdd: a
+        out:
+           out: true/false
+           databaseType: hdfs/mysql/redis/rdd
+           database:
+              hdfs:
+              mysql:
+              redis:
+      - operator: count
+        name: y
+        count:
+           #source只有一个
+           databaseType: hdfs/mysql/redis/rdd
+           hiveSource:
+              ....
+           hdfsSource:
+           mysqlSource:
+           rdd: x
+           countkey: housid
+           countValue: click_num
+           filter:
+           missing:
+        out:
+           out: true/false
+           databaseType: hdfs/mysql/redis/rdd
+           database:
+              hdfs:
+              mysql:
+              redis:
+      - operator: union
+        name: h
+        union:
+          #两个source
+          fielda:
+             databaseType: hive/hdfs/mysql/redis/rdd
+             hiveSource:
+                url: ip:port/database
+                  ...
+                sql:
+             mysqlSource:
+                url:
+                ...
+                sql:
+             hdfsSource:
+                path:
+             rdd: a
+          fieldb:
+             databaseType: hive/hdfs/mysql/redis/rdd
+             hiveSource:
+                url: ip:port/database
+                  ...
+                sql:
+             mysqlSource:
+                url:
+                ...
+                sql:
+             hdfsSource:
+                path:
+             rdd: a
+        out: /xxx
+   out:
+      path: /xxxx
+
+statistics:
+   databaseType: hive/hdfs/mysql/redis/rdd
+   hiveSource:
+      url: ip:port/database
+      ...
+      sql:
+   mysqlSource:
+      url:
+      ...
+      sql:
+   hdfsSource:
+      path:
+   out:
+      /xxx?
+
+#非必填，计算
+calculate:
+  #必填,公式
+  formula:  公式
+  #用于计算的数据源，hdfs文件
+  source:
+     path: /xx/xxx/xxx
+     dataType: text
+     columnSplitSymbol: \t
+     variables:
+        - name: 公式变量名
+          num: 1
+        - name: 公式变量名
+          num: 该变量的值在hdfs的列index
+        - name: 公式变量名
+          num: 3
+  #非必填，输出到hdfs
+  out:
+    name: 文件名
+    path: 文件路径
