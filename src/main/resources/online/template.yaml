@@ -1,0 +1,37 @@
+status: 1
+service: serviceName
+dataSources:
+  - sourceType: kafka
+    dataFormat: json
+    config:
+       group:
+       topic:
+       url:
+    operators:
+       - originField: house.price
+         storeField: total_price
+       - originField: house.house_id
+         storeField: house_id
+  - sourceType: kafka
+    dataFormat: json
+    config:
+       group:
+       topic:
+       url:
+    operators:
+       - originField: house.area
+         storeField: area
+       - originField: house.house_id
+         storeField: house_id
+operators:
+   - formula: (/ total_price area)
+     storeField: unit_price
+dataStore:
+   level: batch/single
+   batchNum: 1000
+   storeMedia: hbase_only/hbase_hdfs/hdfs_only
+   dataFormat: json
+   primaryField:
+      type: assign/default
+      field: craate_time
+   #hdfs 路径 hive表名
