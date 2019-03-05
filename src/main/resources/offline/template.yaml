@@ -8,10 +8,10 @@ dataSources:
         primaryFields:
            - name: uid
              cols:
-              - originFieldIndex: search_log
+              - originField: search_log
                 dataType: json
                 data: user.uid
-              - originFieldIndex: search_log
+              - originField: search_log
                 dataType: json
                 data: user.city_code
              columnSplitSymbol: _
@@ -23,7 +23,7 @@ dataSources:
              dataType: json
              data: user.age
              storeField: age
-           - originFieldIndex: 字段名
+           - originField: 字段名
              dataType: json
              data: user.uid
              storeField: uid
@@ -35,14 +35,12 @@ dataSources:
         primaryFields:
            - name: uid
              cols:
-                - originFieldIndex: num
+                - originField: 字段名
                   dataType: json
                   data: user.uid
-                  storeField: uid
-                - originFieldIndex: num
+                - originField: 字段名
                   dataType: json
                   data: user.city_code
-                  storeField: city_code
              columnSplitSymbol: _
       - returnVariableName: user_house_log
    hdfsSource:
@@ -59,8 +57,10 @@ dataSources:
         originFields:
            - originFieldIndex: num
              dataType: json
-             data: user.age
+             data: user.edu
+             storeField: edu
            - originFieldIndex: num
+             storeField: city_code
 pipelines:
    #数据预处理
    pretreatment:
