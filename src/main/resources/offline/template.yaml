@@ -38,9 +38,11 @@ dataSources:
                 - originFieldIndex: num
                   dataType: json
                   data: user.uid
+                  storeField: uid
                 - originFieldIndex: num
                   dataType: json
                   data: user.city_code
+                  storeField: city_code
              columnSplitSymbol: _
       - returnVariableName: user_house_log
    hdfsSource:
