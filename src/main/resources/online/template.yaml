@@ -35,3 +35,9 @@ dataStore:
       type: assign/default
       field: craate_time
    #hdfs 路径 hive表名
+   hdfs:
+      path: /xxx
+   hbase:
+      tableName: 表名
+      #存储时长，-1为永久，单位S
+      expire: -1/3600

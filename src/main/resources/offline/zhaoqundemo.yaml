@@ -1,0 +1,89 @@
+dataSources:
+   hiveSource:
+      - returnVariableName: user_hive_1
+        url: ip:port/database
+        ...
+        pt: day
+        sql: select * from dw.dw_beike_house_ext_info_da where pt=?
+        primaryFields:
+           - name: uid
+             cols:
+              - originFieldIndex: search_log
+                dataType: json
+                data: user.uid
+              - originFieldIndex: search_log
+                dataType: json
+                data: user.city_code
+             columnSplitSymbol: _
+          - cols: ...
+            name: house_id
+      - returnVariableName: user_hive_2
+        url: ip:port/database
+        ...
+        pt: day
+        sql: select * from dw.dw_beike_house_ext_info_da where pt=?
+        primaryFields:
+           - name: uid
+             cols:
+                - originFieldIndex: num
+                  dataType: json
+                  data: user.uid
+                - originFieldIndex: num
+                  dataType: json
+                  data: user.city_code
+             columnSplitSymbol: _
+      - returnVariableName: user_house_log
+   hdfsSource:
+      - returnVariableName: user_log_1
+        path: /xx/xxx/xxx
+        primaryFields:
+           - name: uid
+             cols:
+                - originFieldIndex: num
+                  dataType: json
+                  data: user.uid
+             columnSplitSymbol: _
+        #获取需要使用列
+        originFields:
+           - originFieldIndex: num
+             dataType: json
+             data: user.age
+           - originFieldIndex: num
+pipelines:
+   #数据预处理
+   pretreatment:
+      - formula: (manyToOne  user_hive_1.uid user_hive_2.uid user_hive_3.uid)
+        returnVariableName: user
+      - formula: (missing .. filter ..user)
+        returnVariableName: user_after
+      - formula: (manyToOne  user_hive_1.house_id house_hive_2.house_id user_hive_3.house_id)
+        returnVariableName: house
+      - formula: (missing .. filter ..house)
+        returnVariableName: house_after
+      - formula: (manyToOne user_after.uid user_house_log.uid)
+        returnVariableName: user_house_log_join_user
+      - formula: (manyToOne house_after.house_id user_house_log_join_user.house_id)
+        returnVariableName: user_house_log_all
+   #生成多维特征
+   features:
+      - formula: (getSet user_house_log_all age)
+        returnVariableName: user_house_feature_age
+      - formula: (getSet user_house_feature_age edu)
+        returnVariableName: user_house_feature_edu
+      - formula: (getWeight user_house_feature_edu price)
+        returnVariableName: user_house_feature_price
+      - formula: (oneHot user_house_feature_price uid)
+        returnVariableName: user_house_feature_uid
+        out:
+           path: /xxxxx
+      - formula: (map user_house_feature_uid)
+        returnVariableName: user_house_feature_a
+        calculate:
+           formula: (/ click (+ click expose))
+           variables:
+             - name: click
+               field: click_cnt
+             - name: expose
+               field: expose_cnt
+        out:
+           tableName: xxxx
