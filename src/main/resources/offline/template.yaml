@@ -17,6 +17,16 @@ dataSources:
              columnSplitSymbol: _
           - cols: ...
             name: house_id
+        #获取需要使用列
+        originFields:
+           - originField: 字段名
+             dataType: json
+             data: user.age
+             storeField: age
+           - originFieldIndex: 字段名
+             dataType: json
+             data: user.uid
+             storeField: uid
       - returnVariableName: user_hive_2
         url: ip:port/database
         ...
